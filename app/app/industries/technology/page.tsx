@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import PageStub from "@/components/PageStub";
+import IndustryPage from "@/components/IndustryPage";
+import { industryBySlug } from "@/lib/industries-content";
 
 export const metadata: Metadata = { title: "Technology — Leri" };
 
 export default function Page() {
-  return (
-    <PageStub
-      kicker="Industries"
-      title="Accounts, plans and incidents"
-      blurb="Seats, plans, entitlements and the incident everyone is emailing about at once."
-    />
-  );
+  return <IndustryPage industry={industryBySlug["technology"]} />;
 }

@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import PageStub from "@/components/PageStub";
+import ProductPage from "@/components/ProductPage";
+import { productBySlug } from "@/lib/products-content";
 
 export const metadata: Metadata = { title: "Chat — Leri" };
 
 export default function Page() {
-  return (
-    <PageStub
-      kicker="Products"
-      title="Safe, on-brand replies"
-      blurb="The channel your customers already use, answered in seconds with the account open in front of it."
-    />
-  );
+  return <ProductPage product={productBySlug["chat"]} />;
 }

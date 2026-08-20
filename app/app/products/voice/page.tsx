@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import PageStub from "@/components/PageStub";
+import ProductPage from "@/components/ProductPage";
+import { productBySlug } from "@/lib/products-content";
 
 export const metadata: Metadata = { title: "Voice — Leri" };
 
 export default function Page() {
-  return (
-    <PageStub
-      kicker="Products"
-      title="Human-like conversation"
-      blurb="Picks up on the first ring, in a voice that doesn't announce itself as a machine."
-    />
-  );
+  return <ProductPage product={productBySlug["voice"]} />;
 }

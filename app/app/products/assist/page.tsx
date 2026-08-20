@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import PageStub from "@/components/PageStub";
+import ProductPage from "@/components/ProductPage";
+import { productBySlug } from "@/lib/products-content";
 
 export const metadata: Metadata = { title: "Assist — Leri" };
 
 export default function Page() {
-  return (
-    <PageStub
-      kicker="Products"
-      title="Drafts for your team"
-      blurb="For everything it doesn't resolve, it drafts the reply and pulls the account context."
-    />
-  );
+  return <ProductPage product={productBySlug["assist"]} />;
 }

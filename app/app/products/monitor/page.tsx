@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import PageStub from "@/components/PageStub";
+import ProductPage from "@/components/ProductPage";
+import { productBySlug } from "@/lib/products-content";
 
 export const metadata: Metadata = { title: "Monitor — Leri" };
 
 export default function Page() {
-  return (
-    <PageStub
-      kicker="Products"
-      title="Always-on QA"
-      blurb="Every conversation scored, every action logged against the policy that authorised it."
-    />
-  );
+  return <ProductPage product={productBySlug["monitor"]} />;
 }
