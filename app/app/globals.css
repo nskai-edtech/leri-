@@ -1,0 +1,121 @@
+:root {
+  --ground: #FBFAF7;
+  --band: #F4F0E9;
+  --ink: #191713;
+  --body: #4E4940;
+  --muted: #6B6459;
+  --accent: #A8452A;
+  --accent-deep: #7E3320;
+  --rule: #E8E3DA;
+  --nav-h: 65px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--accent); }
+a:hover { color: var(--accent-deep); }
+::selection { background: #F0D9C8; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@keyframes riseIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+/* Content is visible by default; the reveal only enhances it, so a failed
+   observer can never leave the page blank. */
+.reveal {
+  opacity: 1;
+  transform: none;
+  transition: opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1);
+}
+.js-anim .reveal:not(.in) { opacity: 0; transform: translateY(20px); }
+
+.mono-label {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.hero-rise { animation: riseIn .8s cubic-bezier(.2,.7,.3,1) both; }
+.drift { animation: drift 2.6s ease-in-out infinite; }
+
+.link-underline { border-bottom: 1px solid #E0B7A5; padding-bottom: 2px; text-decoration: none; }
+
+.btn-dark { background: var(--ink); color: var(--ground); transition: background .2s; }
+.btn-dark:hover { background: var(--accent); }
+
+.btn-light { background: #FBFAF7; color: var(--ink); transition: background .2s; }
+.btn-light:hover { background: #E5A182; }
+
+.nav-link { color: var(--body); text-decoration: none; transition: color .2s; }
+.nav-link:hover { color: var(--ink); }
+
+.menu-link { text-decoration: none; color: var(--ink); transition: color .2s; }
+.menu-link:hover { color: var(--accent); }
+
+.footer-link { color: #B5AEA3; text-decoration: none; transition: color .2s; }
+.footer-link:hover { color: #E5A182; }
+
+.feature-card { transition: transform .3s, box-shadow .3s; }
+.feature-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px -26px rgba(25,23,19,.5); }
+
+.field { transition: border-color .2s; }
+.field:focus { border-color: var(--ink); outline: none; }
+.field-dark:focus { border-color: #E5A182; outline: none; }
+
+.skip-btn { transition: border-color .2s, color .2s; }
+.skip-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+/* Dropdown: a 22px transparent padding strip keeps the hover bridge from the
+   nav item to the panel intact. Fixed and centred at one width, no breakpoints,
+   so it can never exceed the viewport edges. */
+.navdd > .menu-panel {
+  position: fixed;
+  top: 46px;
+  left: 50%;
+  width: min(880px, calc(100vw - 24px));
+  padding-top: 22px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -5px);
+  transition: opacity .17s ease, transform .17s ease, visibility .17s;
+  z-index: 80;
+}
+.navdd:hover > .menu-panel,
+.navdd:focus-within > .menu-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+/* Below 760px the hero and the plate panel can't share a row — the panel
+   collapses to a strip and its labels wrap to one word per line. Stack them
+   instead, keeping the pan intact in the lower half. */
+@media (max-width: 760px) {
+  .plate-sticky { flex-direction: column; }
+  .plate-hero {
+    flex: none !important;
+    width: 100%;
+    border-right: none !important;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: clamp(14px, 2.4vh, 24px);
+  }
+  .plate-panel { flex: 1 1 0; min-height: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { transition: none; }
+  .js-anim .reveal:not(.in) { opacity: 1; transform: none; }
+  .hero-rise, .drift { animation: none; }
+}
