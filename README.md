@@ -1,25 +1,41 @@
-# CODING AGENTS: READ THIS FIRST
+# leri-
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Customer service agent Product.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+Leri is an AI customer service agent — voice, chat and email channels over one
+shared policy set, with tooling to build, test, optimize and monitor it.
 
-## What you should do — IMPORTANT
+## Repository layout
 
-**Read the chat transcripts first.** There are 4 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+- `app/` — the Next.js site (App Router, TypeScript)
+- `project/` — the original HTML/CSS prototypes exported from Claude Design,
+  including the `_ds/nocturne-*` design system the pages are built against
+- `chats/` — design conversation transcripts, kept for intent and context
+- `HANDOFF.md` — the original Claude Design handoff brief
 
-**Read `project/Leri Home v2.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+## Running the site
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+```bash
+cd app
+npm install
+npm run dev
+```
 
-## About the design files
+Then open http://localhost:3000.
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+Other scripts: `npm run build`, `npm run start`, `npm run lint`.
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+## Stack
 
-## Bundle contents
+Next.js 15.5, React 19.1, TypeScript 5.8.
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Website build request` project files (HTML prototypes, assets, components)
+## Site structure
+
+- **Products** — Voice, Chat, Email; Assist, Playbooks, Integrations;
+  Experiments, Testing & QA; Insights & reporting, Monitor, Suggestions
+- **Industries** — Retail, Travel & hospitality, Technology, Health,
+  Financial services, Media, Telecommunications
+- **Company** — About, Careers, Contact
+
+Shared navigation and copy live in `app/lib/` (`nav.ts`, `home-content.ts`,
+`tokens.ts`).
