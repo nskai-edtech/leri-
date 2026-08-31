@@ -13,16 +13,24 @@ const expect = [
   { k: "OUT", v: "A written read on resolution rate and where it would escalate" },
 ];
 
+// One inbox (the parent company's) with a per-topic subject line, so
+// enquiries stay sortable without paying for four mailboxes.
+const EMAIL = "contact@nskai.org";
+
 const routes = [
-  { t: "Security review", d: "DPA, hosting and architecture detail, walked through with your team.", a: "security@leri.example" },
-  { t: "Technical questions", d: "Connectors, permissions model, evaluation — straight to an engineer.", a: "engineering@leri.example" },
-  { t: "Pricing", d: "How we price, and what a pilot scope usually looks like.", a: "pricing@leri.example" },
-  { t: "Careers", d: "A note about what you'd want to work on. No roles listed yet.", a: "jobs@leri.example" },
+  { t: "Security review", d: "DPA, hosting and architecture detail, walked through with your team.", s: "Leri — security review" },
+  { t: "Technical questions", d: "Connectors, permissions model, evaluation — straight to an engineer.", s: "Leri — technical question" },
+  { t: "Pricing", d: "How we price, and what a pilot scope usually looks like.", s: "Leri — pricing" },
+  { t: "Careers", d: "A note about what you'd want to work on. No roles listed yet.", s: "Leri — careers" },
 ];
 
+// Cities we cover, not leased offices: no street address or staffed hours,
+// because those are checkable claims and we'd be inventing them.
 const offices = [
-  { city: "New York", addr: "112 Greene Street, Floor 4\nNew York, NY 10012", hours: "Mon–Thu, 09:00–18:00 ET" },
-  { city: "London", addr: "8 Hoxton Square\nLondon N1 6NU", hours: "Mon–Thu, 09:00–18:00 GMT" },
+  { city: "London" },
+  { city: "Lagos" },
+  { city: "Addis Ababa" },
+  { city: "Nairobi" },
 ];
 
 export default function Page() {
@@ -84,7 +92,12 @@ export default function Page() {
               <div key={r.t} style={{ background: c.ground, padding: "22px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
                 <span style={{ fontSize: 15.5, fontWeight: 500, letterSpacing: "-0.02em" }}>{r.t}</span>
                 <span style={{ fontSize: 13.5, lineHeight: 1.5, color: c.muted }}>{r.d}</span>
-                <span style={{ marginTop: 4, fontSize: 14, color: c.accent }}>{r.a}</span>
+                <a
+                  href={`mailto:${EMAIL}?subject=${encodeURIComponent(r.s)}`}
+                  style={{ marginTop: 4, fontSize: 14, color: c.accent, textDecoration: "none" }}
+                >
+                  {EMAIL}
+                </a>
               </div>
             ))}
           </div>
@@ -95,9 +108,7 @@ export default function Page() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "clamp(26px,3.5vw,48px)" }}>
           {offices.map((o) => (
             <div key={o.city} className="reveal" style={{ borderTop: `1px solid ${c.ink}`, paddingTop: 16 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 500, letterSpacing: "-0.024em", margin: "0 0 10px" }}>{o.city}</h3>
-              <p style={{ fontSize: 14.5, lineHeight: 1.6, color: c.muted, margin: "0 0 6px", whiteSpace: "pre-line" }}>{o.addr}</p>
-              <p className="mono-label" style={{ fontSize: 12.5, color: c.faint, margin: 0 }}>{o.hours}</p>
+              <h3 style={{ fontSize: 18, fontWeight: 500, letterSpacing: "-0.024em", margin: 0 }}>{o.city}</h3>
             </div>
           ))}
         </div>
