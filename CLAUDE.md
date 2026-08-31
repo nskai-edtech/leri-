@@ -72,6 +72,11 @@ start of a session instead of asking Ifeanyi to re-explain state. It has a
 one-line entries capped at 15 (fold the oldest 5 into a summary line past
 that). Update at natural breakpoints: finishing a task, or before `/clear`.
 
+**Hard cap: under 100 lines, always.** Past it, cut — don't append. It is a
+briefing, not a diary: if a detail is recoverable from `git log` or the code
+itself, it does not belong here. Prose that restates the diff is the first
+thing to go.
+
 ## This repository
 
 Next.js 15.5 / React 19.1 / TypeScript 5.8 site in `app/`. Design prototypes

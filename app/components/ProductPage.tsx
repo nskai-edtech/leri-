@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { c } from "@/lib/tokens";
 import type { ProductContent, ProductPanel } from "@/lib/products-content";
+import JsonLd from "@/components/JsonLd";
+import { ORG, SITE_URL } from "@/lib/site";
 
 const shell = { maxWidth: 1240, margin: "0 auto" } as const;
 const cardBase = {
@@ -90,10 +92,26 @@ function Panel({ panel }: { panel: ProductPanel }) {
 }
 
 export default function ProductPage({ product }: { product: ProductContent }) {
-  const { group, name, title, intro, panel, image, caps, how, limits } = product;
+  const { slug, group, name, title, intro, panel, image, caps, how, limits } = product;
+
+  // One block per product page, built from the same content the page renders,
+  // so the two can't drift. No offers or ratings: we'd be inventing both.
+  const softwareApplication = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: `${ORG.name} ${name}`,
+    url: `${SITE_URL}/products/${slug}`,
+    description: intro,
+    applicationCategory: "BusinessApplication",
+    applicationSubCategory: group,
+    operatingSystem: "Web",
+    publisher: { "@type": "Organization", name: ORG.name, url: SITE_URL },
+    featureList: caps.map((cap) => cap.t),
+  };
 
   return (
     <main>
+      <JsonLd data={softwareApplication} />
       <section style={{ borderBottom: `1px solid ${c.rule}` }}>
         <div
           style={{
