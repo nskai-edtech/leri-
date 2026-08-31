@@ -11,9 +11,6 @@ Keep under 100 lines — cut, don't append.
 pushed, and deployed; working tree clean. 24 pages + robots/sitemap/llms.txt.
 Bundle 1002KB of the 3MB Worker limit, 29ms cold start.
 
-Verified live: no email addresses anywhere, four city names on /contact, all
-six form fields carry `name` attributes, llms.txt points at the demo form.
-
 **Ifeanyi has further changes he wants to make — ask what they are before
 assuming the queue below is the next thing.**
 
