@@ -6,84 +6,96 @@ Keep under 100 lines — cut, don't append.
 
 ## Current state
 
-24 pages built from the `project/` prototypes. `npm run build` passes: 27
-static routes (24 pages + robots/sitemap/llms.txt). Not deployed anywhere.
-**main is 1 commit ahead of origin, plus ~8 uncommitted files** — the SEO and
-structured-data work below, all reviewed by Ifeanyi, none committed.
+**The site is live and current at https://leri.nsukka-ai.workers.dev**
+(Cloudflare Workers, free plan). Everything through 2026-08-31 is committed,
+pushed, and deployed; working tree clean. 24 pages + robots/sitemap/llms.txt.
+Bundle 1002KB of the 3MB Worker limit, 29ms cold start.
 
-Uncommitted: `lib/site.ts` (SITE_URL + ORG), `app/robots.ts`, `app/sitemap.ts`
-(both nav-derived), `components/JsonLd.tsx`, Organization JSON-LD on
-`app/layout.tsx`, SoftwareApplication in `components/ProductPage.tsx` (covers
-all 11 product pages), `app/llms.txt/route.ts`, and `app/contact/page.tsx`.
+Verified live: no email addresses anywhere, four city names on /contact, all
+six form fields carry `name` attributes, llms.txt points at the demo form.
+
+**Ifeanyi has further changes he wants to make — ask what they are before
+assuming the queue below is the next thing.**
+
+**The one thing left to finish the form:** `RESEND_API_KEY` is not set on the
+Worker, so submissions correctly show an error instead of sending. Ifeanyi
+must run this himself (it prompts for typed input, which a session cannot
+provide); it takes effect immediately, no redeploy:
+
+    cd app && npx wrangler secret put RESEND_API_KEY
+
+## Environment gotchas (all cost time this session — don't rediscover)
+
+- **Node 22 required.** Wrangler refuses to run on 20. `.nvmrc` pins it, but
+  nvm must be loaded per shell:
+  `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 22`
+- **Wrangler needs the sandbox disabled.** Node `fetch` reaches
+  api.cloudflare.com fine from a sandboxed shell but Wrangler's own requests
+  fail with a bare `fetch failed`. Deploys work with sandbox off.
+- **OAuth expires within hours** and cannot refresh non-interactively. Re-run
+  `npx wrangler login` in the background and hand Ifeanyi the fresh URL to
+  click. A CLOUDFLARE_API_TOKEN would end this permanently — recommended, not
+  yet done.
+- **Exit code 0 lies** when a command is piped to `tail` — the status is
+  `tail`'s. Write build output to a file and read it.
+- `next/font` fetches Google Fonts at build time and intermittently fails.
+  Retrying works. Worth switching to `next/font/local` eventually.
 
 ## Decisions that aren't obvious from the code
 
-- **No postal address anywhere, deliberately.** The registered Nigerian
-  address is residential. Contact page lists four city names only — London,
-  Lagos, Addis Ababa, Nairobi — with no street or hours, because those are
-  checkable claims. Same reason `areaServed` in the JSON-LD carries cities
-  and no address. It replaced two invented offices (NYC, London).
+- **No public email anywhere, and no postal address.** The registered
+  Nigerian address is residential; the contact page lists four city names
+  only (London, Lagos, Addis Ababa, Nairobi) with no street or hours. The
+  four `contact@nskai.org` cards were cut too — an inbox nobody watches is
+  worse than none. The demo form is the only route in, so `ContactPoint` in
+  the JSON-LD carries just the `/contact` URL.
+- **The contact form was decorative** and told every visitor an engineer
+  would reply while discarding their details. Now a Server Action
+  (`app/app/contact/actions.ts`) emailing via Resend to
+  **nsukka.ai@gmail.com**. `action={formAction}` not `onSubmit`, so it works
+  without JS. Errors are shown, never a false thank-you.
 - **No offers/ratings in SoftwareApplication** — would be fabricated.
-- **One inbox, `contact@nskai.org`** (parent company, hosted on `nskai.org`
-  at Namecheap), with per-topic mailto subject lines instead of four boxes.
-- **Meta descriptions and OG tags skipped** — Ifeanyi's call, not needed.
-- `leri.cx` bought on Namecheap, no DNS records on it, no mail.
+- **No Neon DB yet.** Email alone solves "the request should reach us"; an
+  inbox is already a record. Add a DB when submissions need querying.
+- `leri.cx` bought on Namecheap. No DNS records, no mail. `contact@nskai.org`
+  is on the separate `nskai.org` domain, so moving leri.cx nameservers to
+  Cloudflare cannot break it.
 
-## Deploy plan (approved; Vercel and Netlify both full, Cloudflare, free)
+## Queue (not yet approved — Ifeanyi has his own changes first)
 
-All 27 routes are static, so visitors never invoke the Worker — Workers free
-gives 100k req/day and **10ms CPU**, which SSR would blow but static assets
-don't count against. The Worker runs only for form submits later, and
-Cloudflare bills CPU not wall-clock, so DB/API waiting is free.
+1. **CLOUDFLARE_API_TOKEN** at dash.cloudflare.com/profile/api-tokens, "Edit
+   Cloudflare Workers" template. Ends the OAuth expiry interruptions before
+   Phase 5 adds more Cloudflare commands.
+2. **Phase 5 — point leri.cx at the Worker.** Namecheap: Domain List >
+   Manage > Domain tab > Nameservers > Custom DNS > paste Cloudflare's two >
+   green checkmark. A Worker custom domain needs the zone on Cloudflare.
+   Propagation usually <1hr, officially up to 48. Then Workers & Pages >
+   leri > Settings > Domains & Routes > Add > Custom Domain; Cloudflare
+   issues DNS + TLS itself. Then disable the workers.dev URL so the site is
+   not reachable at two addresses (splits search ranking).
+3. **Verify leri.cx in Resend** — needs DNS records, so easiest right after
+   Phase 5. Until then mail sends from `onboarding@resend.dev` and can only
+   reach the Resend account owner.
+4. **Phase 6** — www redirect, verify HTTPS, submit sitemap to Search
+   Console. Then Cloudflare Email Routing (free) if @leri.cx mail is wanted.
 
-- **P0** Commit in 3 parts (contact page / SEO plumbing / structured data),
-  push. Nothing deploys that isn't in git first.
-- **P1** In `app/`: install `@opennextjs/cloudflare` + `wrangler` (dev). Add
-  `wrangler.jsonc` (`nodejs_compat`, `global_fetch_strictly_public`, compat
-  date >= 2024-09-23), `open-next.config.ts` (R2 stays commented — it costs),
-  `public/_headers`. Strip any `export const runtime = "edge"`.
-- **P2 GO/NO-GO** `opennextjs-cloudflare build`, check bundle vs the **3MB
-  Worker limit** — the likeliest failure. Then `preview` locally. Fallback if
-  oversized: static export + forms in a separate small Worker. Still free.
-- **P3** Ifeanyi creates a free Cloudflare account, runs `wrangler login`
-  himself (interactive, needs his credentials).
-- **P4** `opennextjs-cloudflare deploy`. Verify everything on the
-  `*.workers.dev` URL *before* touching the domain.
-- **P5** Namecheap: Domain List > Manage > Domain tab > Nameservers dropdown
-  > Custom DNS > paste Cloudflare's two > green checkmark. A Worker custom
-  domain needs the zone on Cloudflare. Wait for propagation (usually <1hr,
-  officially up to 48). Then Workers & Pages > Worker > Settings > Domains &
-  Routes > Add > Custom Domain. Cloudflare issues DNS + TLS itself.
-- **P6** www redirect, verify HTTPS, submit sitemap to Search Console.
+Deliberately skipped: meta descriptions and OG tags (Ifeanyi's call).
+Deliberately last: WebMCP — W3C Community Group draft, not standards-track,
+Chrome-only origin trial, API renamed Aug 2026 so most tutorials are wrong.
 
-Open: manual `wrangler deploy` (assumed) vs connecting the GitHub repo for
-push-to-deploy. Node is 20.19.3 — fine for Wrangler; check OpenNext wants it.
-
-## Queue after deploy
-
-1. **Forms.** Contact/Careers/EmailCapture fake a "sent" state and discard
-   input. Neon DB and Resend account both exist. Plan:
-   `@neondatabase/serverless`, a `submissions` table, one Server Action per
-   form (works without JS), Resend notification to contact@nskai.org on
-   insert. Needs `DATABASE_URL` + `RESEND_API_KEY` in `.env.local` and in the
-   Cloudflare env. This is why P1 picks a host with a server runtime.
-2. **WebMCP** — last, on purpose. Verified 2026-08-27: W3C Community Group
-   draft, NOT standards-track; Chrome-only origin trial (149→156); Edge
-   support claimed but absent from Microsoft's release notes. Renamed
-   `navigator.modelContext` -> `document.modelContext` Aug 2026, so most
-   tutorials are already wrong. Good credibility fit, near-zero reach today.
-
-Known wart: `lib/nav.ts` has the Company menu overview and its About link
-both pointing at `/about`. sitemap and llms.txt both dedupe around it.
+Known wart: `lib/nav.ts` points the Company menu overview and its About link
+both at `/about`. sitemap and llms.txt both dedupe around it.
 
 ## Log
 
 Dated, one line, newest last. Cap 15 — fold the oldest 5 into a summary line.
 
-- 2026-08-21: Created agent.md as the standing progress file for this repo.
-- 2026-08-27: Audited repo — all 24 prototype pages built, build passes, 1 commit unpushed.
-- 2026-08-27: Replaced dead @leri.example addresses with contact@nskai.org mailto links.
-- 2026-08-27: Researched WebMCP maturity; queued it last.
+- 2026-08-21 to 08-27: Created agent.md; audited repo (24 pages, build clean); replaced dead @leri.example addresses; researched WebMCP and queued it last.
 - 2026-08-31: Contact page — four city names, no addresses (registered one is residential).
 - 2026-08-31: Built robots/sitemap/site.ts, JSON-LD (Organization + SoftwareApplication), llms.txt.
-- 2026-08-31: Vercel and Netlify both full; chose Cloudflare Workers via OpenNext. Plan above.
+- 2026-08-31: Vercel and Netlify full; chose Cloudflare Workers via OpenNext. Node 22 via nvm.
+- 2026-08-31: Deployed live to leri.nsukka-ai.workers.dev. Bundle 958KB of the 3MB limit.
+- 2026-08-31: Cut all public emails; rewrote the fake contact form as a real Resend Server Action.
+- 2026-08-31: Found app/.gitignore had no .env patterns — would have committed the API key. Fixed.
+- 2026-08-31: OAuth token expired; redeploy of the form rewrite still pending a credential.
+- 2026-08-31: Re-authed, deployed the form rewrite, verified live. Only the Resend secret is left.
