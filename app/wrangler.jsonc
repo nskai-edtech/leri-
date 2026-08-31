@@ -1,0 +1,26 @@
+{
+  // How Cloudflare runs this site. JSONC = JSON that allows comments.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "leri",
+
+  // The Worker that OpenNext generates from the Next build. Does not exist
+  // until `opennextjs-cloudflare build` has run.
+  "main": ".open-next/worker.js",
+
+  // Workers ships breaking changes behind dates, so pinning one keeps this
+  // Worker behaving the same as the platform moves. Must be >= 2024-09-23.
+  "compatibility_date": "2025-03-25",
+
+  // nodejs_compat: Workers is not Node, so APIs Next expects (Buffer, path,
+  // streams) are absent without this. The build fails immediately without it.
+  // global_fetch_strictly_public: makes fetch() inside the Worker behave like
+  // a real external request instead of silently short-circuiting internally.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  // The prerendered pages. Requests served from here never invoke the Worker,
+  // so they cost nothing against the free tier's 100k/day and 10ms CPU.
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  }
+}

@@ -4,3 +4,14 @@ out
 next-env.d.ts
 *.tsbuildinfo
 .DS_Store
+
+# Cloudflare build output
+.open-next/
+.wrangler/
+
+# Local secrets -- never commit. Next reads .env.local, Wrangler reads
+# .dev.vars. Both hold live API keys.
+.env
+.env.local
+.env*.local
+.dev.vars

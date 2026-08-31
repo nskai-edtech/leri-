@@ -1,0 +1,6 @@
+# Next fingerprints these filenames with a content hash, so a given URL's
+# contents can never change -- safe to tell browsers never to ask again.
+# HTML pages are deliberately not listed: they must keep revalidating, or
+# nobody sees a new deploy.
+/_next/static/*
+  Cache-Control: public,max-age=31536000,immutable
