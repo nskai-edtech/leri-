@@ -36,13 +36,11 @@ const organization = {
   name: ORG.name,
   url: SITE_URL,
   description: ORG.description,
-  email: ORG.email,
   parentOrganization: { "@type": "Organization", name: ORG.parent },
   areaServed: ORG.cities.map((name) => ({ "@type": "City", name })),
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "sales",
-    email: ORG.email,
     url: `${SITE_URL}/contact`,
   },
 };

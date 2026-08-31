@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { c } from "@/lib/tokens";
+import { submitDemoRequest, type ContactState } from "@/app/contact/actions";
 
 const fieldStyle = {
   fontFamily: "inherit",
@@ -24,42 +26,70 @@ const labelCaption = {
 
 const channels = ["Chat", "Email", "Voice"];
 
+// Split out so it can read useFormStatus, which only reports the status of
+// the form it sits inside. Disabling on submit stops double sends.
+function SubmitButton({ sent }: { sent: boolean }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending || sent}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 9,
+        background: c.ink,
+        color: c.ground,
+        border: "none",
+        fontFamily: "inherit",
+        fontSize: 15.5,
+        padding: "13px 22px",
+        borderRadius: 9,
+        cursor: pending || sent ? "default" : "pointer",
+        opacity: pending ? 0.7 : 1,
+      }}
+    >
+      {sent ? "Request sent" : pending ? "Sending…" : "Book a demo"}
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 12h15m0 0l-6-6m6 6l-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+}
+
 export default function ContactForm() {
   const [sel, setSel] = useState<string[]>(["Chat"]);
-  const [sent, setSent] = useState(false);
+  const [state, formAction] = useActionState<ContactState, FormData>(submitDemoRequest, null);
+  const sent = state?.ok === true;
 
   function toggle(chan: string) {
     setSel((s) => (s.includes(chan) ? s.filter((x) => x !== chan) : s.concat(chan)));
   }
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setSent(true);
-  }
-
   return (
     <form
-      onSubmit={onSubmit}
+      action={formAction}
       style={{ background: "#fff", border: `1px solid ${c.ruleDeep}`, padding: "clamp(22px,2.6vw,34px)", display: "flex", flexDirection: "column", gap: 16 }}
     >
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 14 }}>
         <label style={labelStyle}>
           <span style={labelCaption}>Name</span>
-          <input required placeholder="Ana Weill" style={fieldStyle} />
+          <input name="name" required placeholder="Ana Weill" style={fieldStyle} />
         </label>
         <label style={labelStyle}>
           <span style={labelCaption}>Work email</span>
-          <input type="email" required placeholder="ana@company.com" style={fieldStyle} />
+          <input name="email" type="email" required placeholder="ana@company.com" style={fieldStyle} />
         </label>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 14 }}>
         <label style={labelStyle}>
           <span style={labelCaption}>Company</span>
-          <input required placeholder="Company name" style={fieldStyle} />
+          <input name="company" required placeholder="Company name" style={fieldStyle} />
         </label>
         <label style={labelStyle}>
           <span style={labelCaption}>Monthly conversations</span>
-          <select style={fieldStyle}>
+          <select name="volume" style={fieldStyle}>
             <option>Under 10k</option>
             <option>10k – 50k</option>
             <option>50k – 150k</option>
@@ -69,6 +99,9 @@ export default function ContactForm() {
       </div>
       <div>
         <span style={{ display: "block", ...labelCaption, marginBottom: 9 }}>Channels in scope</span>
+        {/* The pills are buttons, so nothing of theirs is submitted. This
+            carries the current selection to the server. */}
+        <input type="hidden" name="channels" value={sel.join(", ")} />
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {channels.map((chan) => {
             const on = sel.includes(chan);
@@ -97,37 +130,27 @@ export default function ContactForm() {
       <label style={labelStyle}>
         <span style={labelCaption}>The ticket you dread most</span>
         <textarea
+          name="ticket"
           rows={3}
           placeholder="Refund disputes where the carrier says delivered and the customer says otherwise."
           style={{ ...fieldStyle, lineHeight: 1.5, resize: "vertical" }}
         />
       </label>
-      <button
-        type="submit"
+      <SubmitButton sent={sent} />
+      <p
+        role="status"
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 9,
-          background: c.ink,
-          color: c.ground,
-          border: "none",
-          fontFamily: "inherit",
-          fontSize: 15.5,
-          padding: "13px 22px",
-          borderRadius: 9,
-          cursor: "pointer",
+          margin: 0,
+          fontSize: 12.5,
+          lineHeight: 1.5,
+          color: state?.error ? "#b3261e" : c.muted,
         }}
       >
-        {sent ? "Request sent" : "Book a demo"}
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 12h15m0 0l-6-6m6 6l-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: c.muted }}>
-        {sent
-          ? "Thank you — an engineer will reply within one business day to arrange the session."
-          : "We reply within one business day. No sales sequence, no gated content."}
+        {state?.error
+          ? state.error
+          : sent
+            ? "Thank you — an engineer will reply within one business day to arrange the session."
+            : "We reply within one business day. No sales sequence, no gated content."}
       </p>
     </form>
   );

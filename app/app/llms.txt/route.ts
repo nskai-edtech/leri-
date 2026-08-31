@@ -28,7 +28,7 @@ function render(): string {
     lines.push("");
   }
 
-  lines.push("## Contact", "", `- Email: ${ORG.email}`, `- [Contact](${SITE_URL}/contact)`, "");
+  lines.push("## Contact", "", `- [Book a demo](${SITE_URL}/contact)`, "");
   return lines.join("\n");
 }
 

@@ -13,17 +13,6 @@ const expect = [
   { k: "OUT", v: "A written read on resolution rate and where it would escalate" },
 ];
 
-// One inbox (the parent company's) with a per-topic subject line, so
-// enquiries stay sortable without paying for four mailboxes.
-const EMAIL = "contact@nskai.org";
-
-const routes = [
-  { t: "Security review", d: "DPA, hosting and architecture detail, walked through with your team.", s: "Leri — security review" },
-  { t: "Technical questions", d: "Connectors, permissions model, evaluation — straight to an engineer.", s: "Leri — technical question" },
-  { t: "Pricing", d: "How we price, and what a pilot scope usually looks like.", s: "Leri — pricing" },
-  { t: "Careers", d: "A note about what you'd want to work on. No roles listed yet.", s: "Leri — careers" },
-];
-
 // Cities we cover, not leased offices: no street address or staffed hours,
 // because those are checkable claims and we'd be inventing them.
 const offices = [
@@ -79,28 +68,6 @@ export default function Page() {
           </div>
 
           <ContactForm />
-        </div>
-      </section>
-
-      <section style={{ background: c.band, borderBottom: `1px solid ${c.rule}` }}>
-        <div style={{ ...shell, padding: "clamp(40px,5vw,72px) clamp(20px,4vw,40px)" }}>
-          <p className="reveal mono-label" style={{ fontSize: 10.5, letterSpacing: ".18em", color: c.accent, margin: "0 0 26px" }}>
-            Other ways through
-          </p>
-          <div className="reveal" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 1, background: c.ruleDeep, border: `1px solid ${c.ruleDeep}` }}>
-            {routes.map((r) => (
-              <div key={r.t} style={{ background: c.ground, padding: "22px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
-                <span style={{ fontSize: 15.5, fontWeight: 500, letterSpacing: "-0.02em" }}>{r.t}</span>
-                <span style={{ fontSize: 13.5, lineHeight: 1.5, color: c.muted }}>{r.d}</span>
-                <a
-                  href={`mailto:${EMAIL}?subject=${encodeURIComponent(r.s)}`}
-                  style={{ marginTop: 4, fontSize: 14, color: c.accent, textDecoration: "none" }}
-                >
-                  {EMAIL}
-                </a>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
