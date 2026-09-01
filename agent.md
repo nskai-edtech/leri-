@@ -39,9 +39,9 @@ permit it. Permission rule not added; Ifeanyi can add it via `/permissions`.
   The form is the only route in; JSON-LD `ContactPoint` carries just `/contact`.
 - **The form must never lie.** It was decorative, promising a reply while
   discarding the details. Now a Server Action emailing via Resend to
-  nsukka.ai@gmail.com. `action={formAction}` not `onSubmit`, so it works
-  without JS; errors are shown, and the confirmation claims nothing untrue —
-  notably it does not tell visitors to check their spam, as they get no mail.
+  nsukka.ai@gmail.com; `action={formAction}` not `onSubmit`, so it works without
+  JS. Errors are shown, and the confirmation claims nothing untrue — notably it
+  never says "check your spam", as the visitor is sent no mail.
 - **No offers/ratings in SoftwareApplication** — would be fabricated.
 - **No Neon DB yet.** An inbox is already a record; add a DB when submissions
   need querying.
