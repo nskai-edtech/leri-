@@ -1,25 +1,20 @@
 # Agent notes
 
-Working memory for Claude Code sessions on this repo. Read this instead of
-replaying old conversation; `git log` has the full history of what shipped.
-Keep under 100 lines — cut, don't append.
+Working memory for sessions on this repo — read instead of replaying old
+conversation; `git log` has what shipped. Keep under 100 lines: cut, don't append.
 
 ## Current state
 
 **The site is live and current at https://leri.nsukka-ai.workers.dev**
-(Cloudflare Workers, free plan). Everything through 2026-08-31 is committed,
-pushed, and deployed; working tree clean. 24 pages + robots/sitemap/llms.txt.
-Bundle 1002KB of the 3MB Worker limit, 29ms cold start.
+(Cloudflare Workers, free plan). 24 pages + robots/sitemap/llms.txt; bundle
+1002KB of the 3MB Worker limit, 29ms cold start.
 
-**Ifeanyi has further changes he wants to make — ask what they are before
-assuming the queue below is the next thing.**
+**The demo form works end to end.** `RESEND_API_KEY` is set on the Worker
+and a live submission was received at nsukka.ai@gmail.com on 2026-09-01.
 
-**The one thing left to finish the form:** `RESEND_API_KEY` is not set on the
-Worker, so submissions correctly show an error instead of sending. Ifeanyi
-must run this himself (it prompts for typed input, which a session cannot
-provide); it takes effect immediately, no redeploy:
-
-    cd app && npx wrangler secret put RESEND_API_KEY
+**Pushed but not yet live:** the success-state rewrite (257fb6d). Ifeanyi runs
+`npm run cf:deploy` himself — auto mode blocks the sandbox-disabled command
+Wrangler needs.
 
 ## Environment gotchas (all cost time this session — don't rediscover)
 
@@ -30,69 +25,76 @@ provide); it takes effect immediately, no redeploy:
   api.cloudflare.com fine from a sandboxed shell but Wrangler's own requests
   fail with a bare `fetch failed`. Deploys work with sandbox off.
 - **OAuth expires within hours** and cannot refresh non-interactively. Re-run
-  `npx wrangler login` in the background and hand Ifeanyi the fresh URL to
-  click. A CLOUDFLARE_API_TOKEN would end this permanently — recommended, not
-  yet done.
-- **Exit code 0 lies** when a command is piped to `tail` — the status is
-  `tail`'s. Write build output to a file and read it.
-- `next/font` fetches Google Fonts at build time and intermittently fails.
-  Retrying works. Worth switching to `next/font/local` eventually.
+  `npx wrangler login` in the background, hand Ifeanyi the URL to click. A
+  CLOUDFLARE_API_TOKEN would end this — see Phase A.
+- **Exit code 0 lies** when a command is piped to `tail` — that is `tail`'s
+  status. Write build output to a file and read it.
+- `next/font` fetches Google Fonts at build time and intermittently fails;
+  retrying works. Worth `next/font/local` eventually.
 
 ## Decisions that aren't obvious from the code
 
-- **No public email anywhere, and no postal address.** The registered
-  Nigerian address is residential; the contact page lists four city names
-  only (London, Lagos, Addis Ababa, Nairobi) with no street or hours. The
-  four `contact@nskai.org` cards were cut too — an inbox nobody watches is
-  worse than none. The demo form is the only route in, so `ContactPoint` in
-  the JSON-LD carries just the `/contact` URL.
-- **The contact form was decorative** and told every visitor an engineer
-  would reply while discarding their details. Now a Server Action
-  (`app/app/contact/actions.ts`) emailing via Resend to
-  **nsukka.ai@gmail.com**. `action={formAction}` not `onSubmit`, so it works
-  without JS. Errors are shown, never a false thank-you.
+- **No public email or postal address anywhere.** The registered Nigerian
+  address is residential, so contact lists four city names only. The
+  `contact@nskai.org` cards went too — an unwatched inbox is worse than none.
+  The form is the only route in; JSON-LD `ContactPoint` carries just `/contact`.
+- **The form must never lie.** It was decorative, promising a reply while
+  discarding the details. Now a Server Action emailing via Resend to
+  nsukka.ai@gmail.com. `action={formAction}` not `onSubmit`, so it works
+  without JS; errors are shown, and the confirmation claims nothing untrue —
+  notably it does not tell visitors to check their spam, as they get no mail.
 - **No offers/ratings in SoftwareApplication** — would be fabricated.
-- **No Neon DB yet.** Email alone solves "the request should reach us"; an
-  inbox is already a record. Add a DB when submissions need querying.
-- `leri.cx` bought on Namecheap. No DNS records, no mail. `contact@nskai.org`
-  is on the separate `nskai.org` domain, so moving leri.cx nameservers to
-  Cloudflare cannot break it.
+- **No Neon DB yet.** An inbox is already a record; add a DB when submissions
+  need querying.
+- `leri.cx` bought on Namecheap; no DNS, no mail. `contact@nskai.org` is on the
+  separate `nskai.org` domain, so moving leri.cx nameservers cannot break it.
 
-## Queue (not yet approved — Ifeanyi has his own changes first)
+## To do
 
-1. **CLOUDFLARE_API_TOKEN** at dash.cloudflare.com/profile/api-tokens, "Edit
-   Cloudflare Workers" template. Ends the OAuth expiry interruptions before
-   Phase 5 adds more Cloudflare commands.
-2. **Phase 5 — point leri.cx at the Worker.** Namecheap: Domain List >
-   Manage > Domain tab > Nameservers > Custom DNS > paste Cloudflare's two >
-   green checkmark. A Worker custom domain needs the zone on Cloudflare.
-   Propagation usually <1hr, officially up to 48. Then Workers & Pages >
-   leri > Settings > Domains & Routes > Add > Custom Domain; Cloudflare
-   issues DNS + TLS itself. Then disable the workers.dev URL so the site is
-   not reachable at two addresses (splits search ranking).
-3. **Verify leri.cx in Resend** — needs DNS records, so easiest right after
-   Phase 5. Until then mail sends from `onboarding@resend.dev` and can only
-   reach the Resend account owner.
-4. **Phase 6** — www redirect, verify HTTPS, submit sitemap to Search
-   Console. Then Cloudflare Email Routing (free) if @leri.cx mail is wanted.
+### Phase 0 — Ifeanyi's own changes
+Not yet described. These come before anything below. Ask; don't assume.
 
-Deliberately skipped: meta descriptions and OG tags (Ifeanyi's call).
-Deliberately last: WebMCP — W3C Community Group draft, not standards-track,
-Chrome-only origin trial, API renamed Aug 2026 so most tutorials are wrong.
+### Phase A — Stop the credential interruptions
+Independent of everything else; do it first, as Phase B adds more Cloudflare
+commands and each OAuth expiry costs a round trip.
 
-Known wart: `lib/nav.ts` points the Company menu overview and its About link
-both at `/about`. sitemap and llms.txt both dedupe around it.
+- [ ] Create a **CLOUDFLARE_API_TOKEN** at dash.cloudflare.com/profile/api-tokens,
+      "Edit Cloudflare Workers" template. Store it outside the repo.
+
+### Phase B — Put the site on leri.cx
+Sequential. Reversible: Namecheap stays the registrar and can point back.
+
+- [ ] Namecheap: Domain List > Manage > Domain tab > Nameservers > Custom DNS
+      > paste Cloudflare's two > green checkmark. Propagation usually <1hr,
+      officially up to 48.
+- [ ] Cloudflare: Workers & Pages > leri > Settings > Domains & Routes > Add >
+      Custom Domain. Cloudflare issues the DNS record and the TLS certificate.
+- [ ] Disable the workers.dev URL — two addresses split search ranking.
+- [ ] Add the www redirect and verify HTTPS.
+
+### Phase C — Mail and search. Needs DNS on Cloudflare, so Phase B first.
+
+- [ ] Verify leri.cx in Resend (adds DNS records), then swap `FROM` in
+      `app/contact/actions.ts` to @leri.cx. Until then it sends from
+      `onboarding@resend.dev`, which reaches only the Resend account owner —
+      fine today, since that is also where the form sends.
+- [ ] Submit the sitemap to Google Search Console.
+- [ ] Optional: Cloudflare Email Routing (free) if @leri.cx mail is wanted.
+
+### Not doing, on purpose
+- Meta descriptions and OG tags — Ifeanyi's call.
+- WebMCP — last. A W3C Community Group draft, not standards-track;
+  Chrome-only origin trial; renamed Aug 2026, so most tutorials are wrong.
+
+### Known wart
+`lib/nav.ts` points the Company overview and its About link both at `/about`;
+sitemap and llms.txt dedupe around it.
 
 ## Log
 
-Dated, one line, newest last. Cap 15 — fold the oldest 5 into a summary line.
+Dated, one line, newest last. Cap 15 — fold the oldest 5 into a summary.
 
 - 2026-08-21 to 08-27: Created agent.md; audited repo (24 pages, build clean); replaced dead @leri.example addresses; researched WebMCP and queued it last.
-- 2026-08-31: Contact page — four city names, no addresses (registered one is residential).
-- 2026-08-31: Built robots/sitemap/site.ts, JSON-LD (Organization + SoftwareApplication), llms.txt.
-- 2026-08-31: Vercel and Netlify full; chose Cloudflare Workers via OpenNext. Node 22 via nvm.
-- 2026-08-31: Deployed live to leri.nsukka-ai.workers.dev. Bundle 958KB of the 3MB limit.
-- 2026-08-31: Cut all public emails; rewrote the fake contact form as a real Resend Server Action.
-- 2026-08-31: Found app/.gitignore had no .env patterns — would have committed the API key. Fixed.
-- 2026-08-31: OAuth token expired; redeploy of the form rewrite still pending a credential.
-- 2026-08-31: Re-authed, deployed the form rewrite, verified live. Only the Resend secret is left.
+- 2026-08-31: Addressless contact page; robots/sitemap/JSON-LD/llms.txt; chose Cloudflare Workers over full Vercel and Netlify and deployed live; cut all public emails and made the fake form a real Resend Server Action; fixed an app/.gitignore missing .env patterns that would have committed the API key.
+- 2026-09-01: Resend secret set; live submission received. The form is real.
+- 2026-09-01: Success now swaps the form for a confirmation panel; deploy pending.
