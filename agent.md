@@ -76,8 +76,7 @@ Sequential. Reversible: Namecheap stays the registrar and can point back.
 
 - [ ] Verify leri.cx in Resend (adds DNS records), then swap `FROM` in
       `app/contact/actions.ts` to @leri.cx. Until then it sends from
-      `onboarding@resend.dev`, which reaches only the Resend account owner —
-      fine today, since that is also where the form sends.
+      `onboarding@resend.dev`, which reaches only the Resend account owner.
 - [ ] Submit the sitemap to Google Search Console.
 - [ ] Optional: Cloudflare Email Routing (free) if @leri.cx mail is wanted.
 
