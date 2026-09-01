@@ -13,8 +13,9 @@ conversation; `git log` has what shipped. Keep under 100 lines: cut, don't appen
 and a live submission was received at nsukka.ai@gmail.com on 2026-09-01.
 
 **Pushed but not yet live:** the success-state rewrite (257fb6d). Ifeanyi runs
-`npm run cf:deploy` himself — auto mode blocks the sandbox-disabled command
-Wrangler needs.
+`npm run cf:deploy` himself — auto mode blocks both the sandbox-disabled command
+Wrangler needs and any attempt by Claude to write .claude/settings.json to
+permit it. Permission rule not added; Ifeanyi can add it via `/permissions`.
 
 ## Environment gotchas (all cost time this session — don't rediscover)
 
@@ -23,9 +24,8 @@ Wrangler needs.
 - **Wrangler needs the sandbox disabled.** Node `fetch` reaches
   api.cloudflare.com fine from a sandboxed shell but Wrangler's own requests
   fail with a bare `fetch failed`. Deploys work with sandbox off.
-- **OAuth expires within hours** and cannot refresh non-interactively. Re-run
-  `npx wrangler login` in the background, hand Ifeanyi the URL to click. A
-  CLOUDFLARE_API_TOKEN would end this — see Phase A.
+- **OAuth is no longer used** — CLOUDFLARE_API_TOKEN is in Ifeanyi's ~/.bashrc,
+  so Wrangler needs no browser login. Claude's shell does not see it.
 - **Exit code 0 lies** when a command is piped to `tail` — that is `tail`'s
   status. Write build output to a file and read it.
 - `next/font` fetches Google Fonts at build time and intermittently fails;
@@ -53,12 +53,10 @@ Wrangler needs.
 ### Phase 0 — Ifeanyi's own changes
 Not yet described. These come before anything below. Ask; don't assume.
 
-### Phase A — Stop the credential interruptions
-Independent of everything else; do it first, as Phase B adds more Cloudflare
-commands and each OAuth expiry costs a round trip.
-
-- [ ] Create a **CLOUDFLARE_API_TOKEN** at dash.cloudflare.com/profile/api-tokens,
-      "Edit Cloudflare Workers" template. Store it outside the repo.
+### Phase A — Stop the credential interruptions — DONE 2026-09-01
+- [x] CLOUDFLARE_API_TOKEN ("Edit Cloudflare Workers" scope) exported from
+      Ifeanyi's `~/.bashrc`. Outside the repo, so it cannot be committed. Claude's
+      shell does not inherit it, so deploys run from Ifeanyi's terminal.
 
 ### Phase B — Put the site on leri.cx
 Sequential. Reversible: Namecheap stays the registrar and can point back.
