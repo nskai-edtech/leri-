@@ -18,9 +18,8 @@ Wrangler needs.
 
 ## Environment gotchas (all cost time this session — don't rediscover)
 
-- **Node 22 required.** Wrangler refuses to run on 20. `.nvmrc` pins it, but
-  nvm must be loaded per shell:
-  `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 22`
+- **Node 22 required** (Wrangler refuses 20). `.nvmrc` pins it, but nvm loads
+  per shell: `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 22`
 - **Wrangler needs the sandbox disabled.** Node `fetch` reaches
   api.cloudflare.com fine from a sandboxed shell but Wrangler's own requests
   fail with a bare `fetch failed`. Deploys work with sandbox off.
