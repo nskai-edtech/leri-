@@ -45,8 +45,11 @@ permit it. Permission rule not added; Ifeanyi can add it via `/permissions`.
 - **No offers/ratings in SoftwareApplication** — would be fabricated.
 - **No Neon DB yet.** An inbox is already a record; add a DB when submissions
   need querying.
-- `leri.cx` bought on Namecheap; no DNS, no mail. `contact@nskai.org` is on the
-  separate `nskai.org` domain, so moving leri.cx nameservers cannot break it.
+- `leri.cx` had Namecheap's default records — a parking A/CNAME, 5 eforward MX
+  and an SPF TXT for their free forwarding, none of it ever used. All deleted at
+  import on 2026-09-02: broken MX would accept mail and silently drop it, while
+  no MX bounces visibly. `contact@nskai.org` is on the separate `nskai.org`
+  domain, so the nameserver move cannot touch it.
 
 ## To do
 
@@ -61,9 +64,9 @@ Not yet described. These come before anything below. Ask; don't assume.
 ### Phase B — Put the site on leri.cx
 Sequential. Reversible: Namecheap stays the registrar and can point back.
 
-- [ ] Namecheap: Domain List > Manage > Domain tab > Nameservers > Custom DNS
-      > paste Cloudflare's two > green checkmark. Propagation usually <1hr,
-      officially up to 48.
+- [x] 2026-09-02: leri.cx added to Cloudflare (free), imported records all
+      deleted. Nameservers clara/drew.ns.cloudflare.com given to Namecheap;
+      awaiting the flip from Pending Nameserver Update to Active.
 - [ ] Cloudflare: Workers & Pages > leri > Settings > Domains & Routes > Add >
       Custom Domain. Cloudflare issues the DNS record and the TLS certificate.
 - [ ] Disable the workers.dev URL — two addresses split search ranking.
