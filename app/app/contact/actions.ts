@@ -9,7 +9,7 @@ const TO = "nsukka.ai@gmail.com";
 // owns the Resend account. Swap this for hello@leri.cx once the domain is verified.
 const FROM = "Leri <onboarding@resend.dev>";
 
-export type ContactState = { ok: boolean; error?: string } | null;
+export type ContactState = { ok: boolean; error?: string; company?: string; email?: string } | null;
 
 function field(data: FormData, key: string): string {
   const v = data.get(key);
@@ -73,5 +73,5 @@ export async function submitDemoRequest(
     return { ok: false, error: "Something went wrong on our end. Please try again shortly." };
   }
 
-  return { ok: true };
+  return { ok: true, company, email };
 }

@@ -28,12 +28,12 @@ const channels = ["Chat", "Email", "Voice"];
 
 // Split out so it can read useFormStatus, which only reports the status of
 // the form it sits inside. Disabling on submit stops double sends.
-function SubmitButton({ sent }: { sent: boolean }) {
+function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
-      disabled={pending || sent}
+      disabled={pending}
       style={{
         display: "flex",
         alignItems: "center",
@@ -46,11 +46,11 @@ function SubmitButton({ sent }: { sent: boolean }) {
         fontSize: 15.5,
         padding: "13px 22px",
         borderRadius: 9,
-        cursor: pending || sent ? "default" : "pointer",
+        cursor: pending ? "default" : "pointer",
         opacity: pending ? 0.7 : 1,
       }}
     >
-      {sent ? "Request sent" : pending ? "Sending…" : "Book a demo"}
+      {pending ? "Sending…" : "Book a demo"}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 12h15m0 0l-6-6m6 6l-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
@@ -58,14 +58,42 @@ function SubmitButton({ sent }: { sent: boolean }) {
   );
 }
 
+// Shown in place of the form once it has succeeded. Leaving a filled-in form
+// on screen with a dead button reads as a failure and invites a second send.
+function Confirmation({ company, email }: { company?: string; email?: string }) {
+  return (
+    <div
+      role="status"
+      style={{ background: "#fff", border: `1px solid ${c.ruleDeep}`, padding: "clamp(22px,2.6vw,34px)", display: "flex", flexDirection: "column", gap: 14 }}
+    >
+      <p className="mono-label" style={{ fontSize: 10.5, letterSpacing: ".18em", color: c.accent, margin: 0 }}>
+        Request received
+      </p>
+      <h2 style={{ fontFamily: "var(--font-serif), Georgia, serif", fontWeight: 400, fontSize: "clamp(24px,2.6vw,32px)", lineHeight: 1.1, letterSpacing: "-0.03em", margin: 0 }}>
+        Thank you.
+      </h2>
+      <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: c.body }}>
+        We have your details{company ? ` for ${company}` : ""}. An engineer will reply
+        {email ? " to " : " "}
+        {email ? <strong style={{ fontWeight: 500, color: c.bodyStrong }}>{email}</strong> : null} within one
+        business day to arrange the session.
+      </p>
+      <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: c.muted }}>
+        Bring a week of transcripts, or your help centre URL — that is all the session needs.
+      </p>
+    </div>
+  );
+}
+
 export default function ContactForm() {
   const [sel, setSel] = useState<string[]>(["Chat"]);
   const [state, formAction] = useActionState<ContactState, FormData>(submitDemoRequest, null);
-  const sent = state?.ok === true;
 
   function toggle(chan: string) {
     setSel((s) => (s.includes(chan) ? s.filter((x) => x !== chan) : s.concat(chan)));
   }
+
+  if (state?.ok) return <Confirmation company={state.company} email={state.email} />;
 
   return (
     <form
@@ -136,7 +164,7 @@ export default function ContactForm() {
           style={{ ...fieldStyle, lineHeight: 1.5, resize: "vertical" }}
         />
       </label>
-      <SubmitButton sent={sent} />
+      <SubmitButton />
       <p
         role="status"
         style={{
@@ -148,9 +176,7 @@ export default function ContactForm() {
       >
         {state?.error
           ? state.error
-          : sent
-            ? "Thank you — an engineer will reply within one business day to arrange the session."
-            : "We reply within one business day. No sales sequence, no gated content."}
+          : "We reply within one business day. No sales sequence, no gated content."}
       </p>
     </form>
   );
